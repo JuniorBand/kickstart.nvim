@@ -668,6 +668,34 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+      
+      -- ==========================================================
+      -- CONFIGURAÇÃO DE CAMINHOS (ENV VARS)
+      -- ==========================================================
+
+      -- Lista das suas variáveis de ambiente personalizadas
+      local custom_paths = {
+        os.getenv("C")          and (os.getenv("C") .. "/bin"),          -- C/C++ (ucrt64/bin)
+        os.getenv("GO")         and (os.getenv("GO") .. "/bin"),         -- Go
+        os.getenv("JAVA_HOME")  and (os.getenv("JAVA_HOME") .. "/bin"),  -- Java
+        
+        -- Python no Windows geralmente o .exe fica na raiz, e pip em Scripts
+        os.getenv("PYTHON_DEN"), 
+        os.getenv("PYTHON_DEN") and (os.getenv("PYTHON_DEN") .. "/Scripts"),
+        
+        -- NodeJS no Windows geralmente fica na raiz da pasta
+        os.getenv("NODEJS"),
+      }
+
+      -- Injeta esses caminhos no PATH do Neovim
+      local path_sep = package.config:sub(1, 1) == "\\" and ";" or ":"
+      for _, path in ipairs(custom_paths) do
+        if path then
+          -- Adiciona o caminho no começo da lista para ter prioridade
+          vim.env.PATH = path .. path_sep .. vim.env.PATH
+        end
+      end
+      
       local servers = {
         -- clangd = {},
         -- gopls = {},
@@ -681,6 +709,45 @@ require('lazy').setup({
         -- But for many setups, the LSP (`ts_ls`) will work just fine
         -- ts_ls = {},
         --
+
+        -- C / C++
+        clangd = {
+        cmd = {
+          "clangd",
+          "--background-index",
+          "--driver-mode=g++",
+          -- A função abaixo gera o caminho correto dinamicamente
+          (function()
+            -- 1. Pega a variável do sistema
+            local base_path = os.getenv("C") 
+            if not base_path then return "--query-driver=**" end -- Fallback se falhar
+            
+            -- 2. Converte contrabarras (\) do Windows para barras normais (/)
+            -- Isso é CRUCIAL para o Lua e Clangd se entenderem
+            base_path = base_path:gsub("\\", "/")
+            
+            -- 3. Retorna o argumento formatado: "C:/Tools/ucrt64/bin/*"
+            return "--query-driver=" .. base_path .. "/bin/*"
+            end)(),
+          },
+        },
+
+        -- Go (Golang)
+        gopls = {},
+
+        -- Python
+        pyright = {},
+
+        -- Rust (caso queira no futuro)
+        -- rust_analyzer = {},
+
+        -- JavaScript / TypeScript
+        -- Nota: 'ts_ls' é o novo nome do antigo 'tsserver'
+        ts_ls = {},
+
+        -- ⚠️ IMPORTANTE: NÃO coloque 'jdtls' (Java) aqui!
+        -- O Java já está configurado no seu arquivo lua/custom/plugins/java.lua
+        -- Se colocar aqui também, vai dar aquele erro de conflito de novo.
 
         lua_ls = {
           -- cmd = { ... },
@@ -844,6 +911,8 @@ require('lazy').setup({
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
           ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<Tab>'] = cmp.mapping.confirm { select = true },
+          ['<Enter>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
@@ -1001,7 +1070,7 @@ require('lazy').setup({
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
   --
   -- For additional information with loading, sourcing and examples see `:help lazy.nvim-🔌-plugin-spec`
   -- Or use telescope!
