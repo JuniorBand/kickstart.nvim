@@ -717,24 +717,24 @@ require('lazy').setup({
 
         -- C / C++
         clangd = {
-        cmd = {
-          "clangd",
-          "--background-index",
-          "--driver-mode=g++",
-          -- A função abaixo gera o caminho correto dinamicamente
-          (function()
-            -- 1. Pega a variável do sistema
-            local base_path = os.getenv("C") 
-            if not base_path then return "--query-driver=**" end -- Fallback se falhar
-            
-            -- 2. Converte contrabarras (\) do Windows para barras normais (/)
-            -- Isso é CRUCIAL para o Lua e Clangd se entenderem
-            base_path = base_path:gsub("\\", "/")
-            
-            -- 3. Retorna o argumento formatado: "C:/Tools/ucrt64/bin/*"
-            return "--query-driver=" .. base_path .. "/bin/*"
-            end)(),
-          },
+          cmd = {
+            "clangd",
+            "--background-index",
+            "--driver-mode=g++",
+            -- A função abaixo gera o caminho correto dinamicamente
+            (function()
+              -- 1. Pega a variável do sistema
+              local base_path = os.getenv("C") 
+              if not base_path then return "--query-driver=**" end -- Fallback se falhar
+              
+              -- 2. Converte contrabarras (\) do Windows para barras normais (/)
+              -- Isso é CRUCIAL para o Lua e Clangd se entenderem
+              base_path = base_path:gsub("\\", "/")
+              
+              -- 3. Retorna o argumento formatado: "C:/Tools/ucrt64/bin/*"
+              return "--query-driver=" .. base_path .. "/bin/*"
+              end)(),
+            },
         },
 
         -- Go (Golang)
@@ -905,10 +905,31 @@ require('lazy').setup({
         -- <c-k>: Toggle signature help
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
-        preset = 'default',
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
+
+        -- 'default' já traz o básico (C-space para abrir, setas para mover)
+        preset = 'default',
+
+        -- Seus atalhos personalizados traduzidos para o blink.cmp:
+
+        -- Selecionar próximo/anterior com C-n / C-p
+        ['<C-n>'] = { 'select_next', 'fallback' },
+        ['<C-p>'] = { 'select_prev', 'fallback' },
+
+        -- Rolar a documentação (C-b / C-f)
+        ['<C-b>'] = { 'scroll_documentation_up', 'fallback' },
+        ['<C-f>'] = { 'scroll_documentation_down', 'fallback' },
+
+        -- ACEITAR sugestão com TAB, ENTER ou C-y (como você pediu)
+        ['<C-y>'] = { 'select_and_accept' },
+        ['<Tab>'] = { 'select_and_accept', 'fallback' },
+        ['<CR>']  = { 'select_and_accept', 'fallback' },
+
+        -- Pular dentro do Snippet (C-l avança, C-h volta)
+        ['<C-l>'] = { 'snippet_forward', 'fallback' },
+        ['<C-h>'] = { 'snippet_backward', 'fallback' },
       },
 
       appearance = {
