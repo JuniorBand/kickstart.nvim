@@ -908,20 +908,11 @@ require('lazy').setup({
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
       },
 
-<<<<<<< HEAD
-          -- Accept ([y]es) the completion.
-          --  This will auto-import if your LSP supports it.
-          --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
-          ['<Tab>'] = cmp.mapping.confirm { select = true },
-          ['<Enter>'] = cmp.mapping.confirm { select = true },
-=======
       appearance = {
         -- 'mono' (default) for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
         -- Adjusts spacing to ensure icons are aligned
         nerd_font_variant = 'mono',
       },
->>>>>>> 3a3732461ee81a7688c2aedeea76df237ec5428c
 
       completion = {
         -- By default, you may press `<c-space>` to show the documentation.
